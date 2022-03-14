@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 from skimage import io
-import util
+from . import util
 
 def min_max(image):
     image_min = np.min(image)

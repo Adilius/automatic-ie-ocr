@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-import util
+from . import util
 import imutils.object_detection as imutils
 import csv
 from operator import itemgetter
@@ -36,7 +36,7 @@ def text_prediction(image, new_height, new_width):
     print("Running text detection neural network")
 
     # Load the frozen EAST model
-    model = cv2.dnn.readNet('..\models\\frozen_east_text_detection.pb')
+    model = cv2.dnn.readNet('models\\frozen_east_text_detection.pb')
 
     # Create a 4D input blob, (123.68, 116.78, 103.94) ImageNet
     blob = cv2.dnn.blobFromImage(image, 1, (new_width, new_height),(123.68, 116.78, 103.94), True, False)
@@ -102,6 +102,22 @@ def draw_rectangles(image, rectangles, h_ratio, w_ratio):
     
     return image_copy
 
+def readjust_boxes(boxes, h_ratio, w_ratio):
+    for index, box in enumerate(boxes):
+        boxes[index] = [int(box[0]*w_ratio), int(box[1]*h_ratio), int(box[2]*w_ratio), int(box[3]*h_ratio)]
+
+    boxes = sorted(boxes, key=itemgetter(1))
+
+    return boxes
+
+def save_bounding_boxes(bounding_boxes: list):
+
+    # Save text detected bounding boxes coordinates
+    with open("output_csv\\text_detection_boxes.csv", "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerows(bounding_boxes)
+
+
 def detect_text(image, dimensions: bool = True, threshold: float = 0.1, overlap_threshold: float = 0.5):
 
     print('___ TEXT DETECTION ____')
@@ -123,34 +139,6 @@ def detect_text(image, dimensions: bool = True, threshold: float = 0.1, overlap_
 
     image_copy = draw_rectangles(image, adjusted_boxes, h_ratio, w_ratio)
 
+    save_bounding_boxes(adjusted_boxes)
+
     return image_copy, adjusted_boxes
-
-def readjust_boxes(boxes, h_ratio, w_ratio):
-    for index, box in enumerate(boxes):
-        boxes[index] = [int(box[0]*w_ratio), int(box[1]*h_ratio), int(box[2]*w_ratio), int(box[3]*h_ratio)]
-
-    boxes = sorted(boxes, key=itemgetter(1))
-
-    return boxes
-        
-
-if __name__ == "__main__":
-
-    # Load input preprocessed image
-    print('Reading preprocessed image')
-    image = cv2.imread("..\output_images\preprocessed.png", cv2.IMREAD_COLOR)
-    #util.show_image(image)
-
-    # Text detection
-    print('Running text detection')
-    image_copy, final_boxes = detect_text(image, dimensions=True, threshold = 0.1, overlap_threshold = 0.5)
-
-    # Show result
-    print('Saving image and bounding boxes')
-    #util.show_image(image_copy)
-    util.write_image('..\output_images\\text_detection.png',image_copy)
-
-    # Save text detected bounding boxes coordinates
-    with open("..\output_csv\\text_detection_boxes.csv", "w", newline="") as f:
-        writer = csv.writer(f)
-        writer.writerows(final_boxes)

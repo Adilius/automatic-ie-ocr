@@ -1,7 +1,7 @@
 from typing import final
 import cv2
 import numpy as np
-import util
+from . import util
 import csv
 
 ALPHABET_SET = "0123456789abcdefghijklmnopqrstuvwxyz"
@@ -54,7 +54,7 @@ def recognize_text(image, bounding_boxes_coordinates: list):
     print('___ TEXT RECOGNITION ___')
 
     # Load model
-    model = cv2.dnn.readNet('..\models\crnn.onnx')
+    model = cv2.dnn.readNet('models\\crnn.onnx')
 
     # List to contain outputed text
     output_text = list()
