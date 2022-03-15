@@ -49,6 +49,18 @@ def map_rule(text):
     # Join all characters into a string
     return ''.join(char_list)
 
+def save_recognized_text(bounding_boxes_coordinates, text):
+
+    for i in range(len(text)):
+        bounding_boxes_coordinates[i] = bounding_boxes_coordinates[i].tolist()
+        bounding_boxes_coordinates[i].append(text[i])
+
+    # Save bounding box coordinates with recognized text
+    with open("output_csv\\recognized_text.csv", "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerows(bounding_boxes_coordinates)
+    pass
+
 def recognize_text(image, bounding_boxes_coordinates: list):
 
     print('___ TEXT RECOGNITION ___')
@@ -87,6 +99,9 @@ def recognize_text(image, bounding_boxes_coordinates: list):
         output_text.append(final_text)
 
     print(f'Recognized {len(output_text)} words!          ')
+
+    save_recognized_text(bounding_boxes_coordinates, output_text)
+
     return output_text
 
 if __name__ == "__main__":
@@ -104,10 +119,4 @@ if __name__ == "__main__":
     # Print result
     #print(text)
 
-    for i in range(len(text)):
-        bounding_boxes_coordinates[i].append(text[i])
 
-    # Save bounding box coordinates with recognized text
-    with open("..\output_csv\\recognized_text.csv", "w", newline="") as f:
-        writer = csv.writer(f)
-        writer.writerows(bounding_boxes_coordinates)
