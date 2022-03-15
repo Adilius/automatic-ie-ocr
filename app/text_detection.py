@@ -139,6 +139,8 @@ def detect_text(image, dimensions: bool = True, threshold: float = 0.1, overlap_
 
     image_copy = draw_rectangles(image, adjusted_boxes, h_ratio, w_ratio)
 
+    util.show_image(image_copy)
+
     save_bounding_boxes(adjusted_boxes)
 
     return image_copy, adjusted_boxes

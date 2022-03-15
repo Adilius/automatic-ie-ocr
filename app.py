@@ -5,15 +5,14 @@ import app.util as util
 import cv2
 
 # Input image
-input_image = cv2.imread("image.png", cv2.IMREAD_COLOR)
-#util.show_image(input_image)
+input_image = cv2.imread("filled.png", cv2.IMREAD_COLOR)
+util.show_image(input_image)
 
 # ______ Preprocess ______ 
-
 preprocessed_image = preprocessing.preprocess_image(
-    image=input_image, grayscale=True, noise_removal=True, deskew=True
+    image=input_image, grayscale=True, noise_removal=True, deskew=False
 )
-#util.show_image(preprocessed_image)
+util.show_image(preprocessed_image)
 
 merged_image = cv2.merge([preprocessed_image,preprocessed_image,preprocessed_image])
 
@@ -26,8 +25,5 @@ image_boxes, bounding_boxes_coordinates = text_detection.detect_text(merged_imag
 
 
 # ______  Text recognition ______ 
-
 text = text_recognition.recognize_text(preprocessed_image, bounding_boxes_coordinates)
-
 #print(text)
-

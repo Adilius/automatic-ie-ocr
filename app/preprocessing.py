@@ -38,11 +38,9 @@ def deskew_image(image):
     coords = np.column_stack(np.where(thresh > 0))
     angle = cv2.minAreaRect(coords)[-1]
 
-    # find angle
-    if angle < -45:
-        angle = -(90 + angle)
-    else:
-        angle = -angle
+    # Correct angle off-set
+    angle = angle - 90
+
 
     # deskew
     (h, w) = image.shape[:2]
