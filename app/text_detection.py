@@ -117,30 +117,43 @@ def save_bounding_boxes(bounding_boxes: list):
         writer = csv.writer(f)
         writer.writerows(bounding_boxes)
 
+def midpoint(bounding_boxes: list):
+    for box in bounding_boxes:
+        midpoint_x = box[3] - box[1]
+        midpoint_y = box[2] - box[0]
+        box.append(midpoint_x)
+        box.append(midpoint_y)
+
+    return bounding_boxes
 
 def detect_text(image, dimensions: bool = True, threshold: float = 0.1, overlap_threshold: float = 0.5):
 
     print('___ TEXT DETECTION ____')
 
-    if dimensions:
-        new_height, new_width, h_ratio, w_ratio = get_new_dimensions(image)
-    else:
-        new_height, new_width, _ = image.shape
-        h_ratio, w_ratio = 1,1
-        print("Dimensions kept change", new_height, new_width)
 
+    # Re-shape image
+    new_height, new_width, h_ratio, w_ratio = get_new_dimensions(image)
+
+    # Predict bounding boxes
     geometry, scores = text_prediction(image, new_height, new_width)
 
+    # Threshold low confidence boxes
     rectangles, confidence_score = thresholding(geometry, scores, threshold)
 
+    # Remove overlapping boxes
     final_boxes = non_max_suppression(rectangles, confidence_score, overlap_threshold)
 
+    # Revert re-shape
     adjusted_boxes = readjust_boxes(final_boxes, h_ratio, w_ratio)
 
+    # Create image
     image_copy = draw_rectangles(image, adjusted_boxes, h_ratio, w_ratio)
-
     util.show_image(image_copy)
 
+    # Calculate mid-point for height
+    adjusted_boxes = midpoint(adjusted_boxes)
+
+    # Print boxes as csv
     save_bounding_boxes(adjusted_boxes)
 
     return image_copy, adjusted_boxes

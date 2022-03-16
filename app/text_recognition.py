@@ -58,6 +58,7 @@ def save_recognized_text(bounding_boxes_coordinates, text):
     # Save bounding box coordinates with recognized text
     with open("output_csv\\recognized_text.csv", "w", newline="") as f:
         writer = csv.writer(f)
+        #writer.writerow(["y1","x1","y2","x2","word"])
         writer.writerows(bounding_boxes_coordinates)
 
 def recognize_text(image, bounding_boxes_coordinates: list):
