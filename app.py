@@ -5,7 +5,7 @@ import app.util as util
 import cv2
 
 # Input image
-input_image = cv2.imread("form_filled\\top_form\\2.png", cv2.IMREAD_COLOR)
+input_image = cv2.imread("form_filled\\top_form\\1.png", cv2.IMREAD_COLOR)
 util.show_image(input_image)
 
 # ______ Preprocess ______
