@@ -52,7 +52,7 @@ def map_rule(text):
 def save_recognized_text(bounding_boxes_coordinates, text):
 
     for i in range(len(text)):
-        bounding_boxes_coordinates[i] = bounding_boxes_coordinates[i].tolist()
+        #bounding_boxes_coordinates[i] = bounding_boxes_coordinates[i].tolist()
         bounding_boxes_coordinates[i].append(text[i])
 
     # Save bounding box coordinates with recognized text

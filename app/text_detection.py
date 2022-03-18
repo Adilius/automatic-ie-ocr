@@ -9,7 +9,6 @@ from operator import itemgetter
 NEW_DIMENSIONS = 32
 
 def get_new_dimensions(image):
-
     print('Calculating new dimensions to fit model')
 
     # Get new image shape
@@ -32,8 +31,7 @@ def get_new_dimensions(image):
     return new_height, new_width, h_ratio, w_ratio
 
 def text_prediction(image, new_height, new_width):
-
-    print("Running text detection neural network")
+    print("Running text detection with neural network")
 
     # Load the frozen EAST model
     model = cv2.dnn.readNet('models\\frozen_east_text_detection.pb')
@@ -52,7 +50,6 @@ def text_prediction(image, new_height, new_width):
     return geometry, scores
 
 def thresholding(geometry, scores, threshold):
-
     print("Thresholding low score boxes")
 
     rectangles = list()
@@ -78,15 +75,13 @@ def thresholding(geometry, scores, threshold):
 
 # use Non-max suppression to get the required rectangles
 def non_max_suppression(rectangles, confidence_score, overlap_threshold):
-
     print('Removing overlaps with non-maximum suppression')
 
     fin_boxes = imutils.non_max_suppression(np.array(rectangles), probs=confidence_score, overlapThresh=overlap_threshold)
     return fin_boxes
 
 def draw_rectangles(image, rectangles, h_ratio, w_ratio):
-
-    print('Drawing rectangles on image')
+    print('Drawing bounding boxes on image')
 
     image_copy = image.copy()
 
@@ -103,6 +98,8 @@ def draw_rectangles(image, rectangles, h_ratio, w_ratio):
     return image_copy
 
 def readjust_boxes(boxes, h_ratio, w_ratio):
+    print("Readjust boxes")
+
     for index, box in enumerate(boxes):
         boxes[index] = [int(box[0]*w_ratio), int(box[1]*h_ratio), int(box[2]*w_ratio), int(box[3]*h_ratio)]
 
@@ -111,6 +108,7 @@ def readjust_boxes(boxes, h_ratio, w_ratio):
     return boxes
 
 def save_bounding_boxes(bounding_boxes: list):
+    print("Saving results to CSV")
 
     # Save text detected bounding boxes coordinates
     with open("output_csv\\text_detection_boxes.csv", "w", newline="") as f:
@@ -118,16 +116,19 @@ def save_bounding_boxes(bounding_boxes: list):
         writer.writerows(bounding_boxes)
 
 def midpoint(bounding_boxes: list):
+    print("Calculating midpoint for each box")
+
+    extended_bounding_boxes = list()
+
     for box in bounding_boxes:
         midpoint_x = box[3] - box[1]
         midpoint_y = box[2] - box[0]
-        box.append(midpoint_x)
-        box.append(midpoint_y)
+        new_box = [box[0], box[1], box[2], box[3], midpoint_x, midpoint_y]
+        extended_bounding_boxes.append(new_box)
 
-    return bounding_boxes
+    return extended_bounding_boxes
 
 def detect_text(image, dimensions: bool = True, threshold: float = 0.1, overlap_threshold: float = 0.5):
-
     print('___ TEXT DETECTION ____')
 
 
