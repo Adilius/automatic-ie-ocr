@@ -121,9 +121,10 @@ def midpoint(bounding_boxes: list):
     extended_bounding_boxes = list()
 
     for box in bounding_boxes:
-        midpoint_x = box[3] + int((box[3] - box[1])/2)
-        midpoint_y = box[2] + int((box[2] - box[0])/2)
+        midpoint_x = box[0] + int((box[2] - box[0])/2)
+        midpoint_y = box[1] + int((box[3] - box[1])/2)
         new_box = [box[0], box[1], box[2], box[3], midpoint_x, midpoint_y]
+        print(new_box)
         extended_bounding_boxes.append(new_box)
 
     return extended_bounding_boxes
