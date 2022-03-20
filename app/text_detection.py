@@ -26,7 +26,7 @@ def get_new_dimensions(image):
 
     #print("Old dimensions",height, width)
     #print("New dimensions",new_height, new_width)
-    #print("Ratio change", h_ratio, w_ratio)
+    print("Ratio change", h_ratio, w_ratio)
 
     return new_height, new_width, h_ratio, w_ratio
 
@@ -121,12 +121,20 @@ def midpoint(bounding_boxes: list):
     extended_bounding_boxes = list()
 
     for box in bounding_boxes:
-        midpoint_x = box[3] - box[1]
-        midpoint_y = box[2] - box[0]
+        midpoint_x = box[3] + int((box[3] - box[1])/2)
+        midpoint_y = box[2] + int((box[2] - box[0])/2)
         new_box = [box[0], box[1], box[2], box[3], midpoint_x, midpoint_y]
         extended_bounding_boxes.append(new_box)
 
     return extended_bounding_boxes
+
+def draw_midpoint(image, adjusted_boxes):
+
+    image_copy = image.copy()
+
+    for box in adjusted_boxes:
+        cv2.circle(image_copy, (box[4], box[5]), 3, (0, 0, 255), 2)
+    return image_copy
 
 def detect_text(image, dimensions: bool = True, threshold: float = 0.1, overlap_threshold: float = 0.5):
     print('___ TEXT DETECTION ____')
@@ -149,10 +157,14 @@ def detect_text(image, dimensions: bool = True, threshold: float = 0.1, overlap_
 
     # Create image
     image_copy = draw_rectangles(image, adjusted_boxes, h_ratio, w_ratio)
-    util.show_image(image_copy)
+    
 
     # Calculate mid-point for height
     adjusted_boxes = midpoint(adjusted_boxes)
+
+    # Draw mid-points
+    image_copy = draw_midpoint(image_copy, adjusted_boxes)
+    util.show_image(image_copy)
 
     # Print boxes as csv
     save_bounding_boxes(adjusted_boxes)
