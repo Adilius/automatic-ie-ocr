@@ -137,7 +137,7 @@ def draw_midpoint(image, adjusted_boxes):
         cv2.circle(image_copy, (box[4], box[5]), 3, (0, 0, 255), 2)
     return image_copy
 
-def detect_text(image, dimensions: bool = True, threshold: float = 0.1, overlap_threshold: float = 0.5):
+def detect_text(image,  threshold: float = 0.1, overlap_threshold: float = 0.5):
     print('___ TEXT DETECTION ____')
 
 

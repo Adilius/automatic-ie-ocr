@@ -49,19 +49,21 @@ def map_rule(text):
     # Join all characters into a string
     return ''.join(char_list)
 
-def save_recognized_text(bounding_boxes_coordinates, text):
+def save_recognized_text(boxes, text):
 
     for i in range(len(text)):
-        #bounding_boxes_coordinates[i] = bounding_boxes_coordinates[i].tolist()
-        bounding_boxes_coordinates[i].append(text[i])
+        #boxes[i] = boxes[i].tolist()
+        boxes[i].append(text[i])
 
     # Save bounding box coordinates with recognized text
     with open("output_csv\\recognized_text.csv", "w", newline="") as f:
         writer = csv.writer(f)
         #writer.writerow(["y1","x1","y2","x2","word"])
-        writer.writerows(bounding_boxes_coordinates)
+        writer.writerows(boxes)
 
-def recognize_text(image, bounding_boxes_coordinates: list):
+    return boxes
+
+def recognize_text(image, boxes: list):
 
     print('___ TEXT RECOGNITION ___')
 
@@ -72,7 +74,7 @@ def recognize_text(image, bounding_boxes_coordinates: list):
     output_text = list()
 
     # Iterate over each segment
-    for box in bounding_boxes_coordinates:
+    for box in boxes:
 
 
         # Segment image containing one text box
@@ -98,25 +100,8 @@ def recognize_text(image, bounding_boxes_coordinates: list):
         #print(final_text)
         output_text.append(final_text)
 
-    print(f'Recognized {len(output_text)} words!          ')
+    print(f'Recognized {len(output_text)} words! {output_text}')
 
-    save_recognized_text(bounding_boxes_coordinates, output_text)
+    boxes = save_recognized_text(boxes, output_text)
 
-    return output_text
-
-if __name__ == "__main__":
-
-    # Read in the processed image
-    image = cv2.imread('..\output_images\preprocessed.png')
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-    # Read bounding boxes
-    bounding_boxes_coordinates = read_bounding_boxes('..\output_csv\\text_detection_boxes.csv')
-
-    # Text recognition
-    text = recognize_text(image, bounding_boxes_coordinates)
-
-    # Print result
-    #print(text)
-
-
+    return boxes
