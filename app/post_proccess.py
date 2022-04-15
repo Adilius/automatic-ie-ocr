@@ -4,7 +4,7 @@ def group_fields(boxes : list):
 
     pass
 
-def fuzzy_compare(blank_words: list, recognized_words: list)
+def fuzzy_compare(blank_words: list, recognized_words: list):
     pass
 
 def post_process(boxes : list):
