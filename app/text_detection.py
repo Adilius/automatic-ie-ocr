@@ -165,7 +165,7 @@ def detect_text(image,  threshold: float = 0.1, overlap_threshold: float = 0.5):
 
     # Draw mid-points
     image_copy = draw_midpoint(image_copy, adjusted_boxes)
-    util.show_image(image_copy)
+    #util.show_image(image_copy)
 
     # Print boxes as csv
     save_bounding_boxes(adjusted_boxes)
