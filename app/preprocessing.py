@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from skimage import io
 from . import util
 
+
 def min_max(image):
     image_min = np.min(image)
     image_max = np.max(image)
@@ -41,7 +42,6 @@ def deskew_image(image):
     # Correct angle off-set
     angle = angle - 90
 
-
     # deskew
     (h, w) = image.shape[:2]
     center = (w // 2, h // 2)
@@ -52,36 +52,34 @@ def deskew_image(image):
     return image
 
 
-def preprocess_image(
-    image, grayscale: bool, noise_removal: bool, deskew: bool
-):
+def preprocess_image(image, grayscale: bool, noise_removal: bool, deskew: bool):
 
-    print('___ PREPROCESSING ____')
+    print("___ PREPROCESSING ____")
 
     # Turn image to gray
-    print('Grayscale: ', end="")
+    print("Grayscale: ", end="")
     if grayscale:
-        print('True')
+        print("True")
         image = grayscale_image(image)
     else:
-        print('False')
+        print("False")
 
     # Remove noise gaussian
-    print('Gaussian noise removal: ', end="")
+    print("Gaussian noise removal: ", end="")
     if noise_removal:
-        print('True')
+        print("True")
         image = noise_remove(image)
         image = cv2.convertScaleAbs(image)
     else:
-        print('False')
+        print("False")
 
     # Rotate image
-    print('Deskew: ', end="")
+    print("Deskew: ", end="")
     if deskew:
-        print('True')
+        print("True")
         image = deskew_image(image)
     else:
-        print('False')
+        print("False")
 
     return image
 
@@ -89,17 +87,17 @@ def preprocess_image(
 if __name__ == "__main__":
 
     # Input image
-    print('Reading input image...')
+    print("Reading input image...")
     image = cv2.imread("..\image.png", cv2.IMREAD_COLOR)
     util.show_image(image)
 
     # Preprocess
-    print('Preprocessing image...')
+    print("Preprocessing image...")
     image = preprocess_image(
         image=image, grayscale=True, noise_removal=True, deskew=True
     )
 
     # Showing & saving result image
-    print('Saving image...')
+    print("Saving image...")
     util.show_image(image)
-    util.write_image('..\output_images\preprocessed.png', image)
+    util.write_image("..\output_images\preprocessed.png", image)
