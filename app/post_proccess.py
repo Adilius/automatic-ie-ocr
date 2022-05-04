@@ -121,8 +121,120 @@ def assign_question_boxes(boxes: dict, grouped_boxes: list):
                     print("match")
             #print(word, match)
             #print(remaining_words_list)
-    pprint.pprint(boxes, sort_dicts=False)
+    #pprint.pprint(boxes, sort_dicts=False)
     return boxes
+
+def cluster_questions(assigned_boxes: dict):
+
+    # ASSIGN CLUSTER TO ANSWER BOXES
+    for question_id, question_box in assigned_boxes.items():
+
+        is_question = question_box["question"]
+        if is_question:
+            for neighbor_id, neighbor_box in assigned_boxes.items():
+                is_question = neighbor_box["question"]
+                if is_question:                
+                    if neighbor_id != question_id:
+
+                        question_cluster = question_box["cluster"]
+                        neighbor_cluster = neighbor_box["cluster"]
+
+                        if question_cluster == neighbor_cluster:
+                            #print(f'{question_id=} {neighbor_id=}')
+
+                            # Modify first box
+                            assigned_boxes[question_id]["text"] = assigned_boxes[question_id]["text"] + " " + assigned_boxes[neighbor_id]["text"]
+                            assigned_boxes[question_id]["positions"]["bottom_right"] = assigned_boxes[neighbor_id]["positions"]["bottom_right"]
+
+                            question_x = assigned_boxes[question_id]["positions"]["midpoint"]["x"]
+                            neighbor_x = assigned_boxes[neighbor_id]["positions"]["midpoint"]["x"]
+                            new_x = int((neighbor_x + question_x)/2)
+                            assigned_boxes[question_id]["positions"]["midpoint"]["x"] = new_x
+
+                            question_y = assigned_boxes[question_id]["positions"]["midpoint"]["y"]
+                            neighbor_y = assigned_boxes[neighbor_id]["positions"]["midpoint"]["y"]
+                            new_y = int((neighbor_y + question_y)/2)
+                            assigned_boxes[question_id]["positions"]["midpoint"]["y"] = new_y
+
+                            # Remove second box
+                            assigned_boxes.pop(neighbor_id)
+
+                            # Assign new clusters
+                            assigned_boxes = cluster_questions(assigned_boxes)
+                            return assigned_boxes
+                            
+    #pprint.pprint(assigned_boxes, sort_dicts=False)
+    return assigned_boxes
+
+
+
+def cluster_answers(assigned_boxes: dict):
+
+    shortest_path = list()
+    
+    # ASSIGN ANSWERS TO CLUSTERS
+    for answer_id, answer_box in assigned_boxes.items():
+
+        is_question = answer_box["question"]
+        if not is_question:
+
+            # Get answer box position
+            answer_box = (
+                int(answer_box["positions"]["midpoint"]["x"]),
+                int(answer_box["positions"]["midpoint"]["y"]),
+            )
+
+            # Iterate over all question clusters
+            for question_id, question_box in assigned_boxes.items():
+
+
+                is_question = question_box["question"]
+                if is_question:
+
+                    # Get neighbor boxes position
+                    neighbor_box_pos = (
+                            int(question_box["positions"]["midpoint"]["x"]),
+                            int(question_box["positions"]["midpoint"]["y"]),
+                        )
+
+                        # Calculate distance between origin and neighbor
+                    weighted_eucledian_distance = math.sqrt(
+                            pow((answer_box[0] - neighbor_box_pos[0])/2, 2)
+                            + pow((answer_box[1] - neighbor_box_pos[1])*2, 2)
+                        )
+
+                    shortest_path.append((weighted_eucledian_distance, question_id, answer_id))
+
+            shortest_path = sorted(shortest_path, key=lambda tup: tup[0])
+            shortest_path = shortest_path[:1]
+            #print(shortest_path)
+            q_id = int(shortest_path[0][1])
+            a_id = int(shortest_path[0][2])
+            #print(f'{q_id=} {a_id=}')
+            assigned_boxes[str(a_id)]["cluster"] = assigned_boxes[str(q_id)]["cluster"]
+            shortest_path.clear()
+
+    pprint.pprint(assigned_boxes, sort_dicts=False)
+    return assigned_boxes
+
+def save_clustered_answers(clustered_answers: dict):
+
+    questions_list = list()
+    answers_list = list()
+
+    for id, box in clustered_answers.items():
+        if box["question"] is True:
+            questions_list.append([])
+            questions_list[int(box["cluster"])].append(box["text"])
+
+    for id, box in clustered_answers.items():
+        if box["question"] is False:
+            answers_list.append([])
+            answers_list[int(box["cluster"])].append(box["text"])
+
+    print(questions_list)
+    print(answers_list)
+    pass
     
 
 def fuzzy_compare(origin_word: str, words: list):
@@ -135,8 +247,8 @@ def save_grouped_fields(grouped_fields: list):
 
     # Save text detected bounding boxes coordinates
     with open("output_csv\\grouped_fields.csv", "w", newline="") as f:
-        writer = csv.writer(f, dialect="excel")
-        writer.writerow(grouped_fields)
+        writer = csv.writer(f)
+        writer.writerows(grouped_fields)
 
 
 # To help easier manipulate boxes
@@ -182,5 +294,11 @@ def post_process_filled(boxes: list, grouped_boxes: list):
     boxes_dict = convert_to_dict(boxes)
 
     assigned_boxes = assign_question_boxes(boxes_dict, grouped_boxes)
+
+    clustered_questions =  cluster_questions(assigned_boxes)
+
+    clustered_answers = cluster_answers(clustered_questions)
+
+    save_clustered_answers(clustered_answers)
 
     pass
