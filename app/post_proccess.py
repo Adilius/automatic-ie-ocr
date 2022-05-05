@@ -99,6 +99,7 @@ def group_fields(boxes: dict):
     return clustered_boxes, boxes
 
 def assign_question_boxes(boxes: dict, grouped_boxes: list):
+    print("Detecting questions in filled form...")
 
     # For each word in each cluster
     for cluster_id, cluster in enumerate(grouped_boxes):
@@ -118,13 +119,14 @@ def assign_question_boxes(boxes: dict, grouped_boxes: list):
                 if box["text"] == match and box["question"] == False:
                     box["question"] = True
                     box["cluster"] = cluster_id
-                    print("match")
+                    #print("match")
             #print(word, match)
             #print(remaining_words_list)
     #pprint.pprint(boxes, sort_dicts=False)
     return boxes
 
 def cluster_questions(assigned_boxes: dict):
+    print("Clustering answers")
 
     # ASSIGN CLUSTER TO ANSWER BOXES
     for question_id, question_box in assigned_boxes.items():
@@ -169,6 +171,7 @@ def cluster_questions(assigned_boxes: dict):
 
 
 def cluster_answers(assigned_boxes: dict):
+    print("Clustering answers...")
 
     shortest_path = list()
     
@@ -214,10 +217,12 @@ def cluster_answers(assigned_boxes: dict):
             assigned_boxes[str(a_id)]["cluster"] = assigned_boxes[str(q_id)]["cluster"]
             shortest_path.clear()
 
-    pprint.pprint(assigned_boxes, sort_dicts=False)
+    #pprint.pprint(assigned_boxes, sort_dicts=False)
     return assigned_boxes
 
 def save_clustered_answers(clustered_answers: dict):
+
+    print('Saving to CSV...')
 
     questions_list = list()
     answers_list = list()
@@ -227,14 +232,23 @@ def save_clustered_answers(clustered_answers: dict):
             questions_list.append([])
             questions_list[int(box["cluster"])].append(box["text"])
 
+    questions_list = [item for sublist in questions_list for item in sublist]
+
     for id, box in clustered_answers.items():
         if box["question"] is False:
-            answers_list.append([])
-            answers_list[int(box["cluster"])].append(box["text"])
+            answers_list.append('')
+            answers_list[int(box["cluster"])] = answers_list[int(box["cluster"])]  +  box["text"] + ' '
+
+    answers_list = [x.rstrip() for x in answers_list]
+    answers_list = [x for x in answers_list if x != []]
+    answers_list = [x for x in answers_list if x != '']
 
     print(questions_list)
     print(answers_list)
-    pass
+
+    with open('output_csv\\output.csv', 'w') as f:
+        writer = csv.writer(f)
+        writer.writerows(zip(questions_list, answers_list))
     
 
 def fuzzy_compare(origin_word: str, words: list):
