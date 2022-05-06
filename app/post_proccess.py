@@ -126,7 +126,7 @@ def assign_question_boxes(boxes: dict, grouped_boxes: list):
     return boxes
 
 def cluster_questions(assigned_boxes: dict):
-    print("Clustering answers")
+    print("Clustering questions...")
 
     # ASSIGN CLUSTER TO ANSWER BOXES
     for question_id, question_box in assigned_boxes.items():
@@ -174,6 +174,7 @@ def cluster_answers(assigned_boxes: dict):
     print("Clustering answers...")
 
     shortest_path = list()
+    pprint.pprint(assigned_boxes, sort_dicts=False)
     
     # ASSIGN ANSWERS TO CLUSTERS
     for answer_id, answer_box in assigned_boxes.items():
@@ -182,7 +183,7 @@ def cluster_answers(assigned_boxes: dict):
         if not is_question:
 
             # Get answer box position
-            answer_box = (
+            answer_box_pos = (
                 int(answer_box["positions"]["midpoint"]["x"]),
                 int(answer_box["positions"]["midpoint"]["y"]),
             )
@@ -195,15 +196,28 @@ def cluster_answers(assigned_boxes: dict):
                 if is_question:
 
                     # Get neighbor boxes position
-                    neighbor_box_pos = (
+                    question_box_pos = (
                             int(question_box["positions"]["midpoint"]["x"]),
                             int(question_box["positions"]["midpoint"]["y"]),
                         )
 
-                        # Calculate distance between origin and neighbor
+                    # Calculate distance between origin and question
+
+                    # Set weights for Y-axis
+                    if answer_box_pos[1] < question_box_pos[1]:
+                        y_weight = 2
+                    else:
+                        y_weight = 0.5
+                    
+                    # Set weights for X-axis
+                    if answer_box_pos[0] < question_box_pos[0]:
+                        x_weight = 2
+                    else:
+                        x_weight = 0.5
+
                     weighted_eucledian_distance = math.sqrt(
-                            pow((answer_box[0] - neighbor_box_pos[0])/2, 2)
-                            + pow((answer_box[1] - neighbor_box_pos[1])*2, 2)
+                            pow((answer_box_pos[0] - question_box_pos[0])*x_weight, 2)
+                            + pow((answer_box_pos[1] - question_box_pos[1])*y_weight, 2)
                         )
 
                     shortest_path.append((weighted_eucledian_distance, question_id, answer_id))
@@ -213,14 +227,16 @@ def cluster_answers(assigned_boxes: dict):
             #print(shortest_path)
             q_id = int(shortest_path[0][1])
             a_id = int(shortest_path[0][2])
-            #print(f'{q_id=} {a_id=}')
+            print(f'{q_id=} {a_id=}')
             assigned_boxes[str(a_id)]["cluster"] = assigned_boxes[str(q_id)]["cluster"]
             shortest_path.clear()
 
-    #pprint.pprint(assigned_boxes, sort_dicts=False)
+    pprint.pprint(assigned_boxes, sort_dicts=False)
     return assigned_boxes
 
 def save_clustered_answers(clustered_answers: dict):
+
+    pprint.pprint(clustered_answers, sort_dicts=False)
 
     print('Saving to CSV...')
 

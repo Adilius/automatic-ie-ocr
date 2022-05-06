@@ -65,12 +65,12 @@ def information_extraction(file_name: str, grouped_boxes: list):
 
 if __name__ == "__main__":
     print("_________ BLANK CLUSTERING __________")
-    grouped_boxes = blank_clustering("form_blank\\top_form\\blank.png")
+    grouped_boxes = blank_clustering("form_blank\\bottom_form\\blank.png")
     print("_____________________________________")
     print("\n" + "\n" + "\n" + "\n")
 
     print("_________ INFORMATION EXTRACTION __________")
     information_extraction(
-        "form_filled\\top_form\\1.png", grouped_boxes
+        "form_filled\\bottom_form\\2.png", grouped_boxes
     )
     print("___________________________________________")
