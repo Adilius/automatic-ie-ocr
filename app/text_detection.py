@@ -176,7 +176,7 @@ def detect_text(image, threshold: float = 0.1, overlap_threshold: float = 0.5):
 
     # Create image
     image_copy = draw_rectangles(image, adjusted_boxes, h_ratio, w_ratio)
-    util.show_image(image_copy)
+    #util.show_image(image_copy)
 
     # Calculate mid-point for height
     adjusted_boxes = midpoint(adjusted_boxes)

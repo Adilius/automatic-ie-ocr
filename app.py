@@ -10,13 +10,13 @@ def blank_clustering(file_name: str):
     # Input image
     # input_image = cv2.imread("form_filled\\top_form\\1.png", cv2.IMREAD_COLOR)
     input_image = cv2.imread(file_name, cv2.IMREAD_COLOR)
-    # util.show_image(input_image)
+    #util.show_image(input_image)
 
     # ______ Preprocess ____________
     preprocessed_image = preprocessing.preprocess_image(
         image=input_image, grayscale=True, noise_removal=True, deskew=False
     )
-    # util.show_image(preprocessed_image)
+    #util.show_image(preprocessed_image)
     # ______________________________
 
     # ______ Text detection ________
@@ -45,10 +45,12 @@ def blank_clustering(file_name: str):
 
 def information_extraction(file_name: str, grouped_boxes: list):
     input_image = cv2.imread(file_name, cv2.IMREAD_COLOR)
+    #util.show_image(input_image)
     # ______ Preprocess ____________
     preprocessed_image = preprocessing.preprocess_image(
         image=input_image, grayscale=True, noise_removal=True, deskew=False
     )
+    #util.show_image(preprocessed_image)
     # ______ Text detection ________
     merged_image = cv2.merge(
         [preprocessed_image, preprocessed_image, preprocessed_image]
@@ -60,7 +62,8 @@ def information_extraction(file_name: str, grouped_boxes: list):
     # ______  Text recognition ______
     boxes = text_recognition.recognize_text(preprocessed_image, boxes)
     # ________ Post-process ________
-    post_process.post_process_filled(boxes, grouped_boxes)
+    clustered_image = post_process.post_process_filled(boxes, grouped_boxes, merged_image)
+    util.show_image(clustered_image)
 
 
 if __name__ == "__main__":
@@ -71,6 +74,6 @@ if __name__ == "__main__":
 
     print("_________ INFORMATION EXTRACTION __________")
     information_extraction(
-        "form_filled\\bottom_form\\2.png", grouped_boxes
+        "form_filled\\bottom_form\\1.png", grouped_boxes
     )
     print("___________________________________________")

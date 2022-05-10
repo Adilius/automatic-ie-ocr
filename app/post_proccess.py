@@ -3,9 +3,23 @@ import json
 import pprint
 import csv
 import difflib
+import cv2
 
 # Factor to beat the average distance to be in cluster
 DISTANCE_CONSTANT = 0.9
+
+COLORS = [
+    (255,0,16),
+    (43,206,72),
+    (0,117,220),
+    (255,168,187),
+    (255,255,0),
+    (255,80,5),
+    (116,10,255),
+    (94,241,242),
+    (157,204,0),
+    (76,0,92)
+]
 
 
 def group_fields(boxes: dict):
@@ -227,16 +241,16 @@ def cluster_answers(assigned_boxes: dict):
             #print(shortest_path)
             q_id = int(shortest_path[0][1])
             a_id = int(shortest_path[0][2])
-            print(f'{q_id=} {a_id=}')
+            #print(f'{q_id=} {a_id=}')
             assigned_boxes[str(a_id)]["cluster"] = assigned_boxes[str(q_id)]["cluster"]
             shortest_path.clear()
 
-    pprint.pprint(assigned_boxes, sort_dicts=False)
+    #pprint.pprint(assigned_boxes, sort_dicts=False)
     return assigned_boxes
 
 def save_clustered_answers(clustered_answers: dict):
 
-    pprint.pprint(clustered_answers, sort_dicts=False)
+    #pprint.pprint(clustered_answers, sort_dicts=False)
 
     print('Saving to CSV...')
 
@@ -307,6 +321,24 @@ def convert_to_dict(boxes: list):
     # pprint.pprint(boxes_dict, sort_dicts=False)
     return boxes_dict
 
+def draw_rectangles(image, boxes):
+    #pprint.pprint(boxes, sort_dicts=False)
+
+    for id, box in boxes.items():
+
+        x1 = box["positions"]["top_left"]["x"]
+        y1 = box["positions"]["top_left"]["y"]
+        x2 = box["positions"]["bottom_right"]["x"]
+        y2 = box["positions"]["bottom_right"]["y"]
+
+        cluster_id = box["cluster"]
+
+        cv2.rectangle(image, (x1, y1), (x2, y2), COLORS[cluster_id], 2)
+
+        #print(x1, y1, x2, y2)
+    
+    return image
+
 
 def post_process_blank(boxes: list):
 
@@ -319,7 +351,7 @@ def post_process_blank(boxes: list):
 
     return grouped_boxes
 
-def post_process_filled(boxes: list, grouped_boxes: list):
+def post_process_filled(boxes: list, grouped_boxes: list, image):
     print("___ POST-PROCESS FILLED ___")
     boxes_dict = convert_to_dict(boxes)
 
@@ -331,4 +363,5 @@ def post_process_filled(boxes: list, grouped_boxes: list):
 
     save_clustered_answers(clustered_answers)
 
-    pass
+    image = draw_rectangles(image, clustered_answers)
+    return image
