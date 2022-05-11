@@ -158,9 +158,30 @@ def cluster_questions(assigned_boxes: dict):
                         if question_cluster == neighbor_cluster:
                             #print(f'{question_id=} {neighbor_id=}')
 
+                            # Get new bottom right position
+                            bottom_right_x_question =  assigned_boxes[question_id]["positions"]["bottom_right"]["x"]
+                            bottom_right_y_question =  assigned_boxes[question_id]["positions"]["bottom_right"]["y"]
+                            bottom_right_x_neighbor =  assigned_boxes[neighbor_id]["positions"]["bottom_right"]["x"]
+                            bottom_right_y_neighbor =  assigned_boxes[neighbor_id]["positions"]["bottom_right"]["y"]
+                            new_bottom_right_x = bottom_right_x_question if (bottom_right_x_question > bottom_right_x_neighbor) else bottom_right_x_neighbor
+                            new_bottom_right_y = bottom_right_y_question if (bottom_right_y_question > bottom_right_y_neighbor) else bottom_right_y_neighbor
+
+                            # Get new top left position
+                            top_left_x_question =  assigned_boxes[question_id]["positions"]["top_left"]["x"]
+                            top_left_y_question =  assigned_boxes[question_id]["positions"]["top_left"]["y"]
+                            top_left_x_neighbor =  assigned_boxes[neighbor_id]["positions"]["top_left"]["x"]
+                            top_left_y_neighbor =  assigned_boxes[neighbor_id]["positions"]["top_left"]["y"]
+                            new_top_left_x = top_left_x_question if (top_left_x_question < top_left_x_neighbor) else top_left_x_neighbor
+                            new_top_left_y = top_left_y_question if (top_left_y_question < top_left_y_neighbor) else top_left_y_neighbor
+
                             # Modify first box
-                            assigned_boxes[question_id]["text"] = assigned_boxes[question_id]["text"] + " " + assigned_boxes[neighbor_id]["text"]
-                            assigned_boxes[question_id]["positions"]["bottom_right"] = assigned_boxes[neighbor_id]["positions"]["bottom_right"]
+                            if assigned_boxes[question_id]["positions"]["midpoint"]["x"] < assigned_boxes[neighbor_id]["positions"]["midpoint"]["x"]:
+                                assigned_boxes[question_id]["text"] = assigned_boxes[question_id]["text"] + " " + assigned_boxes[neighbor_id]["text"]
+                            else:
+                                assigned_boxes[question_id]["text"] = assigned_boxes[neighbor_id]["text"] + " " + assigned_boxes[question_id]["text"]
+
+                            assigned_boxes[question_id]["positions"]["bottom_right"] = {"x": new_bottom_right_x, "y": new_bottom_right_y}
+                            assigned_boxes[question_id]["positions"]["top_left"] = {"x": new_top_left_x, "y": new_top_left_y}
 
                             question_x = assigned_boxes[question_id]["positions"]["midpoint"]["x"]
                             neighbor_x = assigned_boxes[neighbor_id]["positions"]["midpoint"]["x"]
