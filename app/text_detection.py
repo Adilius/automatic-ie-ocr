@@ -156,7 +156,7 @@ def draw_midpoint(image, adjusted_boxes):
     return image_copy
 
 
-def detect_text(image, threshold: float = 0.1, overlap_threshold: float = 0.5):
+def detect_text(image, threshold: float, overlap_threshold: float):
     print("___ TEXT DETECTION ____")
 
     # Re-shape image
