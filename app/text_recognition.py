@@ -59,7 +59,7 @@ def save_recognized_text(boxes, text):
         boxes[i].append(text[i])
 
     # Save bounding box coordinates with recognized text
-    with open("output_csv\\recognized_text.csv", "w", newline="") as f:
+    with open("temp_files\\recognized_text.csv", "w", newline="") as f:
         writer = csv.writer(f)
         # writer.writerow(["y1","x1","y2","x2","word"])
         writer.writerows(boxes)

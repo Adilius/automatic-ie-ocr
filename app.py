@@ -5,8 +5,11 @@ import app.post_proccess as post_process
 import app.util as util
 import cv2
 
-TEXT_DETECTION_THRESHOLD = 0.01
-TEXT_OVERLAP_DETECTION = 0.001
+# High = Less boxes
+TEXT_DETECTION_THRESHOLD = 0.5
+
+# Low = Less overlap
+TEXT_OVERLAP_THRESHOLD = 0.1
 
 def ocr_engine(input_image):
 
@@ -22,7 +25,7 @@ def ocr_engine(input_image):
     # Create 3-layer image to fit text detection
 
     merged_image = cv2.merge([preprocessed_image, preprocessed_image, preprocessed_image])
-    text_detected_image, boxes = text_detection.detect_text(merged_image, threshold=TEXT_DETECTION_THRESHOLD, overlap_threshold=TEXT_OVERLAP_DETECTION)
+    text_detected_image, boxes = text_detection.detect_text(merged_image, threshold=TEXT_DETECTION_THRESHOLD, overlap_threshold=TEXT_OVERLAP_THRESHOLD)
     util.show_image(text_detected_image)
     # ______________________________
 
@@ -59,8 +62,9 @@ def information_extraction(file_name: str, grouped_boxes: list):
     boxes = ocr_engine(input_image)
 
     # ________ Post-process ________
-    clustered_image = post_process.post_process_filled(boxes, grouped_boxes, input_image)
+    clustered_image, output_list = post_process.post_process_filled(boxes, grouped_boxes, input_image)
     util.show_image(clustered_image)
+    return clustered_image, output_list
     # _______________________________
 
 
@@ -71,7 +75,7 @@ if __name__ == "__main__":
     print("\n" + "\n" + "\n" + "\n")
 
     print("_________ INFORMATION EXTRACTION __________")
-    information_extraction(
-        "form_filled\\bottom_form\\4.png", grouped_boxes
+    image, output_list = information_extraction(
+        "form_filled\\bottom_form\\6.png", grouped_boxes
     )
     print("___________________________________________")

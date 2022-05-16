@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 
 def show_image(image):
-    image = resize(image, width=1200)
+    image = resize(image, width=900)
     cv2.imshow("image", image)
     cv2.waitKey(0)
 

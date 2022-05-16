@@ -12,7 +12,6 @@ COLORS = [
     (255,0,16),
     (43,206,72),
     (0,117,220),
-    (255,168,187),
     (255,255,0),
     (255,80,5),
     (116,10,255),
@@ -209,7 +208,7 @@ def cluster_answers(assigned_boxes: dict):
     print("Clustering answers...")
 
     shortest_path = list()
-    pprint.pprint(assigned_boxes, sort_dicts=False)
+    #pprint.pprint(assigned_boxes, sort_dicts=False)
     
     # ASSIGN ANSWERS TO CLUSTERS
     for answer_id, answer_box in assigned_boxes.items():
@@ -271,12 +270,12 @@ def cluster_answers(assigned_boxes: dict):
 
 def save_clustered_answers(clustered_answers: dict):
 
-    #pprint.pprint(clustered_answers, sort_dicts=False)
+    pprint.pprint(clustered_answers, sort_dicts=False)
 
     print('Saving to CSV...')
 
     questions_list = list()
-    answers_list = list()
+    answers_list = ['' for x in range(len(clustered_answers.keys()))]
 
     for id, box in clustered_answers.items():
         if box["question"] is True:
@@ -285,10 +284,19 @@ def save_clustered_answers(clustered_answers: dict):
 
     questions_list = [item for sublist in questions_list for item in sublist]
 
-    for id, box in clustered_answers.items():
+    sorted_answer = sorted(clustered_answers.keys(), key=lambda x: (clustered_answers[x]['positions']["top_left"]["x"], clustered_answers[x]['positions']["top_left"]["x"]))
+    print(sorted_answer)
+
+    sorted_answers = {}
+    for index, key in enumerate(sorted_answer):
+        sorted_answers[str(index)] = clustered_answers[key]
+    pprint.pprint(sorted_answers, sort_dicts=False)
+
+    for id, box in sorted_answers.items():
         if box["question"] is False:
+            print(box)
             answers_list.append('')
-            answers_list[int(box["cluster"])] = answers_list[int(box["cluster"])]  +  box["text"] + ' '
+            answers_list[int(box["cluster"])] =  answers_list[int(box["cluster"])] + box["text"] + ' '
 
     answers_list = [x.rstrip() for x in answers_list]
     answers_list = [x for x in answers_list if x != []]
@@ -297,10 +305,13 @@ def save_clustered_answers(clustered_answers: dict):
     print(questions_list)
     print(answers_list)
 
-    with open('output_csv\\output.csv', 'w') as f:
+    questions_answers_list = zip(questions_list, answers_list)
+
+    with open('temp_files\\output.csv', 'w') as f:
         writer = csv.writer(f)
-        writer.writerows(zip(questions_list, answers_list))
-    
+        writer.writerows(questions_answers_list)
+
+    return questions_answers_list
 
 def fuzzy_compare(origin_word: str, words: list):
     match = difflib.get_close_matches(word=origin_word, possibilities=words, n=1)[0]
@@ -311,7 +322,7 @@ def save_grouped_fields(grouped_fields: list):
     print("Saving fields to CSV")
 
     # Save text detected bounding boxes coordinates
-    with open("output_csv\\grouped_fields.csv", "w", newline="") as f:
+    with open("temp_files\\grouped_fields.csv", "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerows(grouped_fields)
 
@@ -382,7 +393,7 @@ def post_process_filled(boxes: list, grouped_boxes: list, image):
 
     clustered_answers = cluster_answers(clustered_questions)
 
-    save_clustered_answers(clustered_answers)
+    output_list = save_clustered_answers(clustered_answers)
 
     image = draw_rectangles(image, clustered_answers)
-    return image
+    return image, output_list

@@ -87,6 +87,8 @@ def non_max_suppression(rectangles, confidence_score, overlap_threshold):
     fin_boxes = imutils.non_max_suppression(
         np.array(rectangles), probs=confidence_score, overlapThresh=overlap_threshold
     )
+
+    #return rectangles
     return fin_boxes
 
 
@@ -127,7 +129,7 @@ def save_bounding_boxes(bounding_boxes: list):
     print("Saving results to CSV")
 
     # Save text detected bounding boxes coordinates
-    with open("output_csv\\text_detection_boxes.csv", "w", newline="") as f:
+    with open("temp_files\\text_detection_boxes.csv", "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerows(bounding_boxes)
 
