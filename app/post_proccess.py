@@ -270,37 +270,41 @@ def cluster_answers(assigned_boxes: dict):
 
 def save_clustered_answers(clustered_answers: dict):
 
-    pprint.pprint(clustered_answers, sort_dicts=False)
+    #pprint.pprint(clustered_answers, sort_dicts=False)
 
     print('Saving to CSV...')
 
-    questions_list = list()
+    questions_list = [[] for x in range(len(clustered_answers.keys()))]
     answers_list = ['' for x in range(len(clustered_answers.keys()))]
 
     for id, box in clustered_answers.items():
         if box["question"] is True:
-            questions_list.append([])
             questions_list[int(box["cluster"])].append(box["text"])
 
     questions_list = [item for sublist in questions_list for item in sublist]
 
     sorted_answer = sorted(clustered_answers.keys(), key=lambda x: (clustered_answers[x]['positions']["top_left"]["x"], clustered_answers[x]['positions']["top_left"]["x"]))
-    print(sorted_answer)
+    #print(sorted_answer)
 
     sorted_answers = {}
     for index, key in enumerate(sorted_answer):
         sorted_answers[str(index)] = clustered_answers[key]
-    pprint.pprint(sorted_answers, sort_dicts=False)
+    #pprint.pprint(sorted_answers, sort_dicts=False)
 
     for id, box in sorted_answers.items():
         if box["question"] is False:
-            print(box)
+            #print(box)
             answers_list.append('')
             answers_list[int(box["cluster"])] =  answers_list[int(box["cluster"])] + box["text"] + ' '
 
+    # Clean up
     answers_list = [x.rstrip() for x in answers_list]
     answers_list = [x for x in answers_list if x != []]
     answers_list = [x for x in answers_list if x != '']
+
+    questions_list = [x.rstrip() for x in questions_list]
+    questions_list = [x for x in questions_list if x != []]
+    questions_list = [x for x in questions_list if x != '']
 
     print(questions_list)
     print(answers_list)
@@ -314,7 +318,7 @@ def save_clustered_answers(clustered_answers: dict):
     return questions_answers_list
 
 def fuzzy_compare(origin_word: str, words: list):
-    match = difflib.get_close_matches(word=origin_word, possibilities=words, n=1)[0]
+    match = difflib.get_close_matches(word=origin_word, possibilities=words, n=1, cutoff=0)[0]
     return match
 
 

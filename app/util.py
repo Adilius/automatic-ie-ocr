@@ -1,5 +1,6 @@
 import cv2
 import matplotlib.pyplot as plt
+import csv
 
 
 def show_image(image):
@@ -8,9 +9,15 @@ def show_image(image):
     cv2.waitKey(0)
 
 
-def write_image(image_name, image):
-    cv2.imwrite(image_name, image)
+def write_image(path, image):
+    cv2.imwrite(path, image)
 
+def save_csv(path: str, data: list):
+    print(data)
+    with open(path, 'w') as f:
+        csv_writer = csv.writer(f)
+        for row in data:
+            csv_writer.writerow(row)
 
 def show_image_plt(image):
     plt.imshow(image)

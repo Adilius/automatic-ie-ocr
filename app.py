@@ -4,6 +4,8 @@ import app.text_recognition as text_recognition
 import app.post_proccess as post_process
 import app.util as util
 import cv2
+import os
+import pathlib
 
 # High = Less boxes
 TEXT_DETECTION_THRESHOLD = 0.5
@@ -26,7 +28,7 @@ def ocr_engine(input_image):
 
     merged_image = cv2.merge([preprocessed_image, preprocessed_image, preprocessed_image])
     text_detected_image, boxes = text_detection.detect_text(merged_image, threshold=TEXT_DETECTION_THRESHOLD, overlap_threshold=TEXT_OVERLAP_THRESHOLD)
-    util.show_image(text_detected_image)
+    #util.show_image(text_detected_image)
     # ______________________________
 
 
@@ -63,19 +65,34 @@ def information_extraction(file_name: str, grouped_boxes: list):
 
     # ________ Post-process ________
     clustered_image, output_list = post_process.post_process_filled(boxes, grouped_boxes, input_image)
-    util.show_image(clustered_image)
+    #util.show_image(clustered_image)
     return clustered_image, output_list
     # _______________________________
 
 
 if __name__ == "__main__":
-    print("_________ BLANK CLUSTERING __________")
-    grouped_boxes = blank_clustering("form_blank\\bottom_form\\blank.png")
-    print("_____________________________________")
-    print("\n" + "\n" + "\n" + "\n")
 
-    print("_________ INFORMATION EXTRACTION __________")
-    image, output_list = information_extraction(
-        "form_filled\\bottom_form\\6.png", grouped_boxes
-    )
-    print("___________________________________________")
+    PATH = str(pathlib.Path(__file__).parent.resolve())
+    FOLDER_NAMES = []
+    for (dirpath, dirnames, filenames) in os.walk(PATH  + "\\input\\form_blank\\"):
+        FOLDER_NAMES.extend(dirnames)
+        break
+    print(FOLDER_NAMES)
+
+    for folder in FOLDER_NAMES:
+        print("_________ BLANK CLUSTERING __________")
+        grouped_boxes = blank_clustering("input\\form_blank\\" + folder + "\\blank.png")
+        print("_____________________________________")
+        print("\n" + "\n" + "\n" + "\n")
+
+    
+        for (dirpath, dirnames, filenames) in os.walk(PATH  + "\\input\\form_filled\\" + folder + "\\"):
+            for file in filenames:
+                full_file_path = PATH  + "\\input\\form_filled\\" + folder + "\\" + file
+                print(full_file_path)
+                print("_________ INFORMATION EXTRACTION __________")
+                image, output_list = information_extraction(full_file_path, grouped_boxes
+                )
+                util.write_image(PATH + "\\output\\" + folder + "\\" + file, image)
+                util.save_csv(PATH + "\\output\\" + folder + "\\" + file[:-3] + "csv", output_list)
+                print("___________________________________________")
