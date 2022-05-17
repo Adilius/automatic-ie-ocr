@@ -6,18 +6,32 @@ import difflib
 import cv2
 
 # Factor to beat the average distance to be in cluster
-DISTANCE_CONSTANT = 0.9
+# LOWER = LESS NEIGHBORS
+DISTANCE_CONSTANT = 0.7
 
 COLORS = [
-    (255,0,16),
-    (43,206,72),
-    (0,117,220),
-    (255,255,0),
-    (255,80,5),
-    (116,10,255),
-    (94,241,242),
-    (157,204,0),
-    (76,0,92)
+    (230, 25, 75),
+    (60, 180, 75),
+    (255, 225, 25),
+    (0, 130, 200),
+    (245, 130, 48),
+    (145, 30, 180),
+    (70, 240, 240),
+    (240, 50, 230),
+    (210, 245, 60),
+    (250, 190, 212),
+    (0, 128, 128),
+    (220, 190, 255),
+    (170, 110, 40),
+    (255, 250, 200),
+    (128, 0, 0),
+    (170, 255, 195),
+    (128, 128, 0),
+    (255, 215, 180),
+    (0, 0, 128),
+    (128, 128, 128),
+    (255, 255, 255),
+    (0, 0, 0),
 ]
 
 
@@ -95,7 +109,9 @@ def group_fields(boxes: dict):
                 )
 
                 # Assign neighbor new cluster ID
-                if weighted_eucledian_distance <= avg_distance * 0.9:
+                print(f"AVG DISTANCE MODIFIED: {avg_distance * DISTANCE_CONSTANT}")
+                print(f"WEIGHTED DISTANCE: {weighted_eucledian_distance}")
+                if weighted_eucledian_distance <= avg_distance * DISTANCE_CONSTANT:
                     boxes[str(neighbor_id)]["cluster"] = boxes[str(origin_id)][
                         "cluster"
                     ]
@@ -108,8 +124,9 @@ def group_fields(boxes: dict):
     clustered_boxes = [x for x in clustered_boxes if x != []]
 
     print(clustered_boxes)
-    #pprint.pprint(boxes, sort_dicts=False)
+    # pprint.pprint(boxes, sort_dicts=False)
     return clustered_boxes, boxes
+
 
 def assign_question_boxes(boxes: dict, grouped_boxes: list):
     print("Detecting questions in filled form...")
@@ -117,7 +134,7 @@ def assign_question_boxes(boxes: dict, grouped_boxes: list):
     # For each word in each cluster
     for cluster_id, cluster in enumerate(grouped_boxes):
         for word in cluster:
-            
+
             # Get remaining words from image
             remaining_words_list = list()
             for id, box in boxes.items():
@@ -132,11 +149,12 @@ def assign_question_boxes(boxes: dict, grouped_boxes: list):
                 if box["text"] == match and box["question"] == False:
                     box["question"] = True
                     box["cluster"] = cluster_id
-                    #print("match")
-            #print(word, match)
-            #print(remaining_words_list)
-    #pprint.pprint(boxes, sort_dicts=False)
+                    # print("match")
+            # print(word, match)
+            # print(remaining_words_list)
+    # pprint.pprint(boxes, sort_dicts=False)
     return boxes
+
 
 def cluster_questions(assigned_boxes: dict):
     print("Clustering questions...")
@@ -148,49 +166,114 @@ def cluster_questions(assigned_boxes: dict):
         if is_question:
             for neighbor_id, neighbor_box in assigned_boxes.items():
                 is_question = neighbor_box["question"]
-                if is_question:                
+                if is_question:
                     if neighbor_id != question_id:
 
                         question_cluster = question_box["cluster"]
                         neighbor_cluster = neighbor_box["cluster"]
 
                         if question_cluster == neighbor_cluster:
-                            #print(f'{question_id=} {neighbor_id=}')
+                            # print(f'{question_id=} {neighbor_id=}')
 
                             # Get new bottom right position
-                            bottom_right_x_question =  assigned_boxes[question_id]["positions"]["bottom_right"]["x"]
-                            bottom_right_y_question =  assigned_boxes[question_id]["positions"]["bottom_right"]["y"]
-                            bottom_right_x_neighbor =  assigned_boxes[neighbor_id]["positions"]["bottom_right"]["x"]
-                            bottom_right_y_neighbor =  assigned_boxes[neighbor_id]["positions"]["bottom_right"]["y"]
-                            new_bottom_right_x = bottom_right_x_question if (bottom_right_x_question > bottom_right_x_neighbor) else bottom_right_x_neighbor
-                            new_bottom_right_y = bottom_right_y_question if (bottom_right_y_question > bottom_right_y_neighbor) else bottom_right_y_neighbor
+                            bottom_right_x_question = assigned_boxes[question_id][
+                                "positions"
+                            ]["bottom_right"]["x"]
+                            bottom_right_y_question = assigned_boxes[question_id][
+                                "positions"
+                            ]["bottom_right"]["y"]
+                            bottom_right_x_neighbor = assigned_boxes[neighbor_id][
+                                "positions"
+                            ]["bottom_right"]["x"]
+                            bottom_right_y_neighbor = assigned_boxes[neighbor_id][
+                                "positions"
+                            ]["bottom_right"]["y"]
+                            new_bottom_right_x = (
+                                bottom_right_x_question
+                                if (bottom_right_x_question > bottom_right_x_neighbor)
+                                else bottom_right_x_neighbor
+                            )
+                            new_bottom_right_y = (
+                                bottom_right_y_question
+                                if (bottom_right_y_question > bottom_right_y_neighbor)
+                                else bottom_right_y_neighbor
+                            )
 
                             # Get new top left position
-                            top_left_x_question =  assigned_boxes[question_id]["positions"]["top_left"]["x"]
-                            top_left_y_question =  assigned_boxes[question_id]["positions"]["top_left"]["y"]
-                            top_left_x_neighbor =  assigned_boxes[neighbor_id]["positions"]["top_left"]["x"]
-                            top_left_y_neighbor =  assigned_boxes[neighbor_id]["positions"]["top_left"]["y"]
-                            new_top_left_x = top_left_x_question if (top_left_x_question < top_left_x_neighbor) else top_left_x_neighbor
-                            new_top_left_y = top_left_y_question if (top_left_y_question < top_left_y_neighbor) else top_left_y_neighbor
+                            top_left_x_question = assigned_boxes[question_id][
+                                "positions"
+                            ]["top_left"]["x"]
+                            top_left_y_question = assigned_boxes[question_id][
+                                "positions"
+                            ]["top_left"]["y"]
+                            top_left_x_neighbor = assigned_boxes[neighbor_id][
+                                "positions"
+                            ]["top_left"]["x"]
+                            top_left_y_neighbor = assigned_boxes[neighbor_id][
+                                "positions"
+                            ]["top_left"]["y"]
+                            new_top_left_x = (
+                                top_left_x_question
+                                if (top_left_x_question < top_left_x_neighbor)
+                                else top_left_x_neighbor
+                            )
+                            new_top_left_y = (
+                                top_left_y_question
+                                if (top_left_y_question < top_left_y_neighbor)
+                                else top_left_y_neighbor
+                            )
 
                             # Modify first box
-                            if assigned_boxes[question_id]["positions"]["midpoint"]["x"] < assigned_boxes[neighbor_id]["positions"]["midpoint"]["x"]:
-                                assigned_boxes[question_id]["text"] = assigned_boxes[question_id]["text"] + " " + assigned_boxes[neighbor_id]["text"]
+                            if (
+                                assigned_boxes[question_id]["positions"]["midpoint"][
+                                    "x"
+                                ]
+                                < assigned_boxes[neighbor_id]["positions"]["midpoint"][
+                                    "x"
+                                ]
+                            ):
+                                assigned_boxes[question_id]["text"] = (
+                                    assigned_boxes[question_id]["text"]
+                                    + " "
+                                    + assigned_boxes[neighbor_id]["text"]
+                                )
                             else:
-                                assigned_boxes[question_id]["text"] = assigned_boxes[neighbor_id]["text"] + " " + assigned_boxes[question_id]["text"]
+                                assigned_boxes[question_id]["text"] = (
+                                    assigned_boxes[neighbor_id]["text"]
+                                    + " "
+                                    + assigned_boxes[question_id]["text"]
+                                )
 
-                            assigned_boxes[question_id]["positions"]["bottom_right"] = {"x": new_bottom_right_x, "y": new_bottom_right_y}
-                            assigned_boxes[question_id]["positions"]["top_left"] = {"x": new_top_left_x, "y": new_top_left_y}
+                            assigned_boxes[question_id]["positions"]["bottom_right"] = {
+                                "x": new_bottom_right_x,
+                                "y": new_bottom_right_y,
+                            }
+                            assigned_boxes[question_id]["positions"]["top_left"] = {
+                                "x": new_top_left_x,
+                                "y": new_top_left_y,
+                            }
 
-                            question_x = assigned_boxes[question_id]["positions"]["midpoint"]["x"]
-                            neighbor_x = assigned_boxes[neighbor_id]["positions"]["midpoint"]["x"]
-                            new_x = int((neighbor_x + question_x)/2)
-                            assigned_boxes[question_id]["positions"]["midpoint"]["x"] = new_x
+                            question_x = assigned_boxes[question_id]["positions"][
+                                "midpoint"
+                            ]["x"]
+                            neighbor_x = assigned_boxes[neighbor_id]["positions"][
+                                "midpoint"
+                            ]["x"]
+                            new_x = int((neighbor_x + question_x) / 2)
+                            assigned_boxes[question_id]["positions"]["midpoint"][
+                                "x"
+                            ] = new_x
 
-                            question_y = assigned_boxes[question_id]["positions"]["midpoint"]["y"]
-                            neighbor_y = assigned_boxes[neighbor_id]["positions"]["midpoint"]["y"]
-                            new_y = int((neighbor_y + question_y)/2)
-                            assigned_boxes[question_id]["positions"]["midpoint"]["y"] = new_y
+                            question_y = assigned_boxes[question_id]["positions"][
+                                "midpoint"
+                            ]["y"]
+                            neighbor_y = assigned_boxes[neighbor_id]["positions"][
+                                "midpoint"
+                            ]["y"]
+                            new_y = int((neighbor_y + question_y) / 2)
+                            assigned_boxes[question_id]["positions"]["midpoint"][
+                                "y"
+                            ] = new_y
 
                             # Remove second box
                             assigned_boxes.pop(neighbor_id)
@@ -198,18 +281,17 @@ def cluster_questions(assigned_boxes: dict):
                             # Assign new clusters
                             assigned_boxes = cluster_questions(assigned_boxes)
                             return assigned_boxes
-                            
-    #pprint.pprint(assigned_boxes, sort_dicts=False)
-    return assigned_boxes
 
+    # pprint.pprint(assigned_boxes, sort_dicts=False)
+    return assigned_boxes
 
 
 def cluster_answers(assigned_boxes: dict):
     print("Clustering answers...")
 
     shortest_path = list()
-    #pprint.pprint(assigned_boxes, sort_dicts=False)
-    
+    # pprint.pprint(assigned_boxes, sort_dicts=False)
+
     # ASSIGN ANSWERS TO CLUSTERS
     for answer_id, answer_box in assigned_boxes.items():
 
@@ -225,100 +307,128 @@ def cluster_answers(assigned_boxes: dict):
             # Iterate over all question clusters
             for question_id, question_box in assigned_boxes.items():
 
-
                 is_question = question_box["question"]
                 if is_question:
 
                     # Get neighbor boxes position
                     question_box_pos = (
-                            int(question_box["positions"]["midpoint"]["x"]),
-                            int(question_box["positions"]["midpoint"]["y"]),
-                        )
+                        int(question_box["positions"]["midpoint"]["x"]),
+                        int(question_box["positions"]["midpoint"]["y"]),
+                    )
 
                     # Calculate distance between origin and question
-
-                    # Set weights for Y-axis
-                    if answer_box_pos[1] < question_box_pos[1]:
-                        y_weight = 2
-                    else:
-                        y_weight = 0.5
-                    
                     # Set weights for X-axis
                     if answer_box_pos[0] < question_box_pos[0]:
                         x_weight = 2
                     else:
                         x_weight = 0.5
 
-                    weighted_eucledian_distance = math.sqrt(
-                            pow((answer_box_pos[0] - question_box_pos[0])*x_weight, 2)
-                            + pow((answer_box_pos[1] - question_box_pos[1])*y_weight, 2)
-                        )
+                    # Set weights for Y-axis
+                    if answer_box_pos[1] < question_box_pos[1]:
+                        y_weight = 2
+                    else:
+                        y_weight = 0.5
 
-                    shortest_path.append((weighted_eucledian_distance, question_id, answer_id))
+                    total_weight = x_weight * y_weight
+
+                    weighted_eucledian_distance = (
+                        math.sqrt(
+                            pow((answer_box_pos[0] - question_box_pos[0]), 2)
+                            + pow((answer_box_pos[1] - question_box_pos[1]), 2)
+                        )
+                        * total_weight
+                    )
+
+                    shortest_path.append(
+                        (weighted_eucledian_distance, question_id, answer_id)
+                    )
 
             shortest_path = sorted(shortest_path, key=lambda tup: tup[0])
             shortest_path = shortest_path[:1]
-            #print(shortest_path)
+            # print(shortest_path)
             q_id = int(shortest_path[0][1])
             a_id = int(shortest_path[0][2])
-            #print(f'{q_id=} {a_id=}')
+            # print(f'{q_id=} {a_id=}')
             assigned_boxes[str(a_id)]["cluster"] = assigned_boxes[str(q_id)]["cluster"]
             shortest_path.clear()
 
-    #pprint.pprint(assigned_boxes, sort_dicts=False)
+    # pprint.pprint(assigned_boxes, sort_dicts=False)
     return assigned_boxes
+
 
 def save_clustered_answers(clustered_answers: dict):
 
-    #pprint.pprint(clustered_answers, sort_dicts=False)
+    # pprint.pprint(clustered_answers, sort_dicts=False)
 
-    print('Saving to CSV...')
+    print("Saving to CSV...")
 
     questions_list = [[] for x in range(len(clustered_answers.keys()))]
-    answers_list = ['' for x in range(len(clustered_answers.keys()))]
+    answers_list = [[] for x in range(len(clustered_answers.keys()))]
 
+    # print(f"Field names: {questions_list}")
+    # print(f"Field values: {answers_list}")
+
+    # Sort boxes left-to-right
+    sorted_answer = sorted(
+        clustered_answers.keys(),
+        key=lambda x: (
+            clustered_answers[x]["positions"]["top_left"]["x"],
+            clustered_answers[x]["positions"]["top_left"]["x"],
+        ),
+    )
+
+    # Add all questions into list
     for id, box in clustered_answers.items():
         if box["question"] is True:
             questions_list[int(box["cluster"])].append(box["text"])
-
     questions_list = [item for sublist in questions_list for item in sublist]
 
-    sorted_answer = sorted(clustered_answers.keys(), key=lambda x: (clustered_answers[x]['positions']["top_left"]["x"], clustered_answers[x]['positions']["top_left"]["x"]))
-    #print(sorted_answer)
+    for id, box in clustered_answers.items():
+        if box["question"] is False:
+            answers_list[int(box["cluster"])].append(box["text"])
+    answers_list = [item for sublist in answers_list for item in sublist]
+
+    # print(sorted_answer)
 
     sorted_answers = {}
     for index, key in enumerate(sorted_answer):
         sorted_answers[str(index)] = clustered_answers[key]
-    #pprint.pprint(sorted_answers, sort_dicts=False)
+    # pprint.pprint(sorted_answers, sort_dicts=False)
 
     for id, box in sorted_answers.items():
         if box["question"] is False:
-            #print(box)
-            answers_list.append('')
-            answers_list[int(box["cluster"])] =  answers_list[int(box["cluster"])] + box["text"] + ' '
+            # print(box)
+            answers_list.append("")
+            answers_list[int(box["cluster"])] = (
+                answers_list[int(box["cluster"])] + box["text"] + " "
+            )
 
     # Clean up
     answers_list = [x.rstrip() for x in answers_list]
     answers_list = [x for x in answers_list if x != []]
-    answers_list = [x for x in answers_list if x != '']
+    answers_list = [x for x in answers_list if x != ""]
 
     questions_list = [x.rstrip() for x in questions_list]
     questions_list = [x for x in questions_list if x != []]
-    questions_list = [x for x in questions_list if x != '']
+    questions_list = [x for x in questions_list if x != ""]
 
-    print(questions_list)
-    print(answers_list)
+    print(f"Field names: {questions_list}")
+    print(f"Field values: {answers_list}")
 
     questions_answers_list = zip(questions_list, answers_list)
+    output = list(questions_answers_list)
 
-    with open('temp_files\\output.csv', 'w') as f:
+    with open("temp_files\\output.csv", "w") as f:
         writer = csv.writer(f)
         writer.writerows(questions_answers_list)
 
-    return questions_answers_list
+    return output
+
 
 def fuzzy_compare(origin_word: str, words: list):
-    match = difflib.get_close_matches(word=origin_word, possibilities=words, n=1, cutoff=0)[0]
+    match = difflib.get_close_matches(
+        word=origin_word, possibilities=words, n=1, cutoff=0
+    )[0]
     return match
 
 
@@ -357,8 +467,9 @@ def convert_to_dict(boxes: list):
     # pprint.pprint(boxes_dict, sort_dicts=False)
     return boxes_dict
 
+
 def draw_rectangles(image, boxes):
-    #pprint.pprint(boxes, sort_dicts=False)
+    # pprint.pprint(boxes, sort_dicts=False)
 
     for id, box in boxes.items():
 
@@ -369,10 +480,17 @@ def draw_rectangles(image, boxes):
 
         cluster_id = box["cluster"]
 
-        cv2.rectangle(image, (x1, y1), (x2, y2), COLORS[cluster_id], 2)
+        if box["question"] == True:
+            thickness = 7
+        else:
+            thickness = 3
 
-        #print(x1, y1, x2, y2)
-    
+        cv2.rectangle(
+            image, (x1, y1), (x2, y2), COLORS[cluster_id], thickness=thickness
+        )
+
+        # print(x1, y1, x2, y2)
+
     return image
 
 
@@ -387,17 +505,19 @@ def post_process_blank(boxes: list):
 
     return grouped_boxes
 
+
 def post_process_filled(boxes: list, grouped_boxes: list, image):
     print("___ POST-PROCESS FILLED ___")
     boxes_dict = convert_to_dict(boxes)
 
     assigned_boxes = assign_question_boxes(boxes_dict, grouped_boxes)
 
-    clustered_questions =  cluster_questions(assigned_boxes)
+    clustered_questions = cluster_questions(assigned_boxes)
 
     clustered_answers = cluster_answers(clustered_questions)
 
     output_list = save_clustered_answers(clustered_answers)
+    # print(f"{output_list=}")
 
     image = draw_rectangles(image, clustered_answers)
     return image, output_list

@@ -88,7 +88,7 @@ def non_max_suppression(rectangles, confidence_score, overlap_threshold):
         np.array(rectangles), probs=confidence_score, overlapThresh=overlap_threshold
     )
 
-    #return rectangles
+    # return rectangles
     return fin_boxes
 
 
@@ -143,7 +143,7 @@ def midpoint(bounding_boxes: list):
         midpoint_x = box[0] + int((box[2] - box[0]) / 2)
         midpoint_y = box[1] + int((box[3] - box[1]) / 2)
         new_box = [box[0], box[1], box[2], box[3], midpoint_x, midpoint_y]
-        #print(new_box)
+        # print(new_box)
         extended_bounding_boxes.append(new_box)
 
     return extended_bounding_boxes
@@ -178,14 +178,14 @@ def detect_text(image, threshold: float, overlap_threshold: float):
 
     # Create image
     image_copy = draw_rectangles(image, adjusted_boxes, h_ratio, w_ratio)
-    #util.show_image(image_copy)
+    # util.show_image(image_copy)
 
     # Calculate mid-point for height
     adjusted_boxes = midpoint(adjusted_boxes)
 
     # Draw mid-points
     image_copy = draw_midpoint(image_copy, adjusted_boxes)
-    #util.show_image(image_copy)
+    # util.show_image(image_copy)
 
     # Print boxes as csv
     save_bounding_boxes(adjusted_boxes)

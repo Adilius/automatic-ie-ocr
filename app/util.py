@@ -12,12 +12,13 @@ def show_image(image):
 def write_image(path, image):
     cv2.imwrite(path, image)
 
+
 def save_csv(path: str, data: list):
-    print(data)
-    with open(path, 'w') as f:
-        csv_writer = csv.writer(f)
+    with open(path, "w+") as f:
+        csv_writer = csv.writer(f, delimiter=",")
         for row in data:
             csv_writer.writerow(row)
+
 
 def show_image_plt(image):
     plt.imshow(image)
